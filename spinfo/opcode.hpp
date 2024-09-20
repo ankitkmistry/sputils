@@ -1,3 +1,5 @@
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
 #ifndef VELOCITY_OPCODE_HPP
 #define VELOCITY_OPCODE_HPP
 
@@ -18,8 +20,12 @@ enum class Opcode {
     CONSTL,
     /// pop
     POP,
+    /// pop n items from the top of stack
+    NPOP,
     /// duplicate top of stack
     DUP,
+    /// dup top of tack n times
+    NDUP,
 
     // Load-store op
     /// load global
@@ -248,8 +254,6 @@ enum class Opcode {
     RET,
     /// return void
     VRET,
-    /// return n items from the top of stack
-    NRET,
 
     // Debug op
     PRINTLN,
@@ -287,3 +291,5 @@ public:
 };
 
 #endif //VELOCITY_OPCODE_HPP
+
+#pragma clang diagnostic pop
