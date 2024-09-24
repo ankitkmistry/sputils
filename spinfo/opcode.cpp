@@ -46,6 +46,8 @@ static const Info OPCODE_TABLE[] = {
         {"sfstore",      1,  true},
         {"psstore",      2,  true},
         {"psfstore",     1,  true},
+        {"spload",       2,  true},
+        {"spfload",      1,  true},
         {"bload",        2,  false},
         {"bfload",       1,  false},
 
@@ -61,11 +63,13 @@ static const Info OPCODE_TABLE[] = {
         {"invoke",       1,  false},
         {"vinvoke",      2,  true},
         {"sinvoke",      2,  true},
+        {"spinvoke",     2,  true},
         {"linvoke",      2,  false},
         {"ginvoke",      2,  true},
         {"ainvoke",      1,  false},
         {"vfinvoke",     1,  true},
         {"sfinvoke",     1,  true},
+        {"spinvoke",     1,  true},
         {"lfinvoke",     1,  false},
         {"gfinvoke",     1,  true},
 

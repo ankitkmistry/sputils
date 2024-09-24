@@ -100,6 +100,11 @@ enum class Opcode {
     /// pop store static fast
     PSFSTORE,
 
+    /// super class method load
+    SPLOAD,
+    /// super class method load fast
+    SPFLOAD,
+
     /// load lambda
     BLOAD,
     /// load lambda fast
@@ -130,6 +135,8 @@ enum class Opcode {
     VINVOKE,
     /// invoke static
     SINVOKE,
+    /// invoke super class method
+    SPINVOKE,
     /// invoke local
     LINVOKE,
     /// invoke global
@@ -141,6 +148,8 @@ enum class Opcode {
     VFINVOKE,
     /// invoke static fast
     SFINVOKE,
+    /// invoke super class method
+    SPFINVOKE,
     /// invoke local fast
     LFINVOKE,
     /// invoke global fast

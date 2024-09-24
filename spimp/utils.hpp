@@ -7,5 +7,4 @@ uint64 doubleToRaw(double number);
 
 uint64 signedToUnsigned(int64 number);
 
-
 #endif //ELPOPS_UTILS_HPP
