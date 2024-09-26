@@ -2,7 +2,7 @@
 #define ELPOPS_EXCEPTIONS_HPP
 
 #include "common.hpp"
-#include "../spimp/format.hpp"
+#include "format.hpp"
 
 namespace exceptions {
     class CorruptFileError : public std::runtime_error {

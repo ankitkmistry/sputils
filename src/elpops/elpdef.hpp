@@ -98,12 +98,17 @@ struct FieldInfo {
     MetaInfo meta;
 };
 
+struct TypeParamInfo {
+    cpidx name;
+};
+
 struct MethodInfo {
     ui2 accessFlags;
     ui1 type;
     cpidx thisMethod;
 
-    cpidx typeParams;
+    ui1 typeParamCount;
+    TypeParamInfo *typeParams;
 
     ui1 argsCount;
     struct ArgInfo {
@@ -164,7 +169,8 @@ struct ClassInfo {
     ui1 type;
     ui2 accessFlags;
     cpidx thisClass;
-    cpidx typeParams;
+    ui1 typeParamCount;
+    TypeParamInfo *typeParams;
     cpidx supers;
     ui2 fieldsCount;
     FieldInfo *fields;

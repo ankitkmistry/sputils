@@ -75,7 +75,11 @@ ClassInfo ElpReader::readClassInfo() {
     klass.type = readByte();
     klass.accessFlags = readShort();
     klass.thisClass = readShort();
-    klass.typeParams = readShort();
+    klass.typeParamCount = readByte();
+    klass.typeParams = new TypeParamInfo[klass.typeParamCount];
+    for (int i = 0; i < klass.typeParamCount; ++i) {
+        klass.typeParams[i] = readTypeParamInfo();
+    }
     klass.supers = readShort();
     klass.fieldsCount = readShort();
     klass.fields = new FieldInfo[klass.fieldsCount];
@@ -105,12 +109,22 @@ FieldInfo ElpReader::readFieldInfo() {
     return field;
 }
 
+TypeParamInfo ElpReader::readTypeParamInfo() {
+    TypeParamInfo typeparam{};
+    typeparam.name = readShort();
+    return typeparam;
+}
+
 MethodInfo ElpReader::readMethodInfo() {
     MethodInfo method{};
     method.accessFlags = readShort();
     method.type = readByte();
     method.thisMethod = readShort();
-    method.typeParams = readShort();
+    method.typeParamCount = readByte();
+    method.typeParams = new TypeParamInfo[method.typeParamCount];
+    for (int i = 0; i < method.typeParamCount; ++i) {
+        method.typeParams[i] = readTypeParamInfo();
+    }
     method.argsCount = readByte();
     method.args = new MethodInfo::ArgInfo[method.argsCount];
     for (int i = 0; i < method.argsCount; i++) {

@@ -31,9 +31,12 @@ static const Info OPCODE_TABLE[] = {
         {"aload",        1,  false},
         {"astore",       1,  false},
         {"pastore",      1,  false},
-        {"tload",        1,  false},
-        {"tstore",       1,  false},
-        {"ptstore",      1,  false},
+        {"tload",        2,  true},
+        {"tfload",       1,  true},
+        {"tstore",       2,  true},
+        {"tfstore",      1,  true},
+        {"ptstore",      2,  true},
+        {"ptfstore",     1,  true},
         {"mload",        2,  true},
         {"mfload",       1,  true},
         {"mstore",       2,  true},
@@ -132,6 +135,10 @@ static const Info OPCODE_TABLE[] = {
 
         {"println",      0,  false},
 };
+
+static_assert(
+        static_cast<size_t>(Opcode::NUM_OPCODES) + 1 == sizeof(OPCODE_TABLE) / sizeof(OPCODE_TABLE[0]),
+        "update opcode table");
 
 string OpcodeInfo::toString(Opcode opcode) {
     return OPCODE_TABLE[(int) opcode].name;

@@ -1,5 +1,3 @@
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "OCUnusedGlobalDeclarationInspection"
 #ifndef VELOCITY_OPCODE_HPP
 #define VELOCITY_OPCODE_HPP
 

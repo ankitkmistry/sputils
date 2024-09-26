@@ -37,6 +37,8 @@ private:
 
     void write(MethodInfo info);
 
+    void write(MethodInfo::LineInfo line);
+
     void write(MethodInfo::ArgInfo info);
 
     void write(MethodInfo::LocalInfo info);
@@ -50,6 +52,8 @@ private:
     void write(ClassInfo info);
 
     void write(FieldInfo info);
+
+    void write(TypeParamInfo info);
 
     void write(MetaInfo info);
 public:
@@ -72,8 +76,6 @@ public:
     const string &getPath() const { return path; }
 
     FILE *getFile() const { return file; }
-
-    void write(MethodInfo::LineInfo line);
 };
 
 

@@ -18,6 +18,8 @@ private:
 
     FieldInfo readFieldInfo();
 
+    TypeParamInfo readTypeParamInfo();
+
     MethodInfo readMethodInfo();
 
     MethodInfo::LineInfo readLineInfo();

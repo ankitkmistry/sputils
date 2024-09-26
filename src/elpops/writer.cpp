@@ -96,7 +96,10 @@ void ElpWriter::write(MethodInfo info) {
     write(info.accessFlags);
     write(info.type);
     write(info.thisMethod);
-    write(info.typeParams);
+    write(info.typeParamCount);
+    for (int i = 0; i < info.typeParamCount; ++i) {
+        write(info.typeParams[i]);
+    }
     write(info.argsCount);
     for (int i = 0; i < info.argsCount; ++i) {
         write(info.args[i]);
@@ -174,7 +177,10 @@ void ElpWriter::write(ClassInfo info) {
     write(info.type);
     write(info.accessFlags);
     write(info.thisClass);
-    write(info.typeParams);
+    write(info.typeParamCount);
+    for (int i = 0; i < info.typeParamCount; ++i) {
+        write(info.typeParams[i]);
+    }
     write(info.supers);
     write(info.fieldsCount);
     for (int i = 0; i < info.fieldsCount; ++i) {
@@ -196,6 +202,10 @@ void ElpWriter::write(FieldInfo info) {
     write(info.thisField);
     write(info.type);
     write(info.meta);
+}
+
+void ElpWriter::write(TypeParamInfo info) {
+    write(info.name);
 }
 
 void ElpWriter::write(MetaInfo info) {
