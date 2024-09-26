@@ -66,11 +66,17 @@ enum class Opcode {
 
     /// load typearg
     TLOAD,
+    /// load typearg fast
+    TFLOAD,
 
     /// store typearg
     TSTORE,
     /// store typearg fast
+    TFSTORE,
+    /// store typearg
     PTSTORE,
+    /// store typearg fast
+    PTFSTORE,
 
     /// load member
     MLOAD,
