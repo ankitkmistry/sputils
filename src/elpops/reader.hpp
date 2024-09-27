@@ -66,7 +66,7 @@ class ElpReader {
     }
 
     [[noreturn]] void corruptFileError() {
-        throw exceptions::CorruptFileError(path);
+        throw errors::CorruptFileError(path);
     }
 
   public:

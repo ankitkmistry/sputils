@@ -4,7 +4,7 @@
 #include "common.hpp"
 #include "format.hpp"
 
-namespace exceptions
+namespace errors
 {
     class CorruptFileError : public std::runtime_error {
       private:

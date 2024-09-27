@@ -2,7 +2,7 @@
 
 ElpWriter::ElpWriter(const string &filename) : path(filename) {
     file = fopen(filename.c_str(), "wb");
-    if (file == null) throw exceptions::FileNotFoundError(filename);
+    if (file == null) throw errors::FileNotFoundError(filename);
 }
 
 void ElpWriter::close() const {
@@ -53,7 +53,7 @@ void ElpWriter::write(CpInfo info) {
             write(info._array);
             break;
         default:
-            throw exceptions::Unreachable();
+            throw errors::Unreachable();
     }
 }
 
@@ -88,7 +88,7 @@ void ElpWriter::write(ObjInfo info) {
             write(info._class);
             break;
         default:
-            throw exceptions::Unreachable();
+            throw errors::Unreachable();
     }
 }
 

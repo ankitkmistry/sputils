@@ -16,7 +16,7 @@ bool CpInfo::operator==(const CpInfo &rhs) const {
         case 0x07:
             return _array == rhs._array;
         default:
-            throw exceptions::Unreachable();
+            throw errors::Unreachable();
     }
 }
 

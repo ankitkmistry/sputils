@@ -1,5 +1,8 @@
 #include "sign.hpp"
 #include "../spimp/exceptions.hpp"
+#include "../spimp/utils.hpp"
+
+const Sign Sign::EMPTY = Sign("");
 
 class SignParser {
     const string text;
@@ -15,55 +18,32 @@ class SignParser {
             };
         }
         vector<SignElement> elements;
-        string module = "";
-        // allow the unnamed module
-        if (isalpha(peek()))
-            module = IDENTIFIER();
-        elements.push_back(SignElement(module, Sign::Kind::MODULE));
-
-        while (match(':')) {
-            check(':');
-            module = IDENTIFIER();
-            elements.push_back(SignElement(module, Sign::Kind::MODULE));
-        }
-
-        while (match('.')) {
-            try {
-                elements.push_back(classElement());
-            } catch (const exceptions::SignatureError &) {
-                // Let the control go to methodElement()
-                break;
+        if (match('<')) {
+            elements.push_back(SignElement(IDENTIFIER(), Sign::Kind::TYPE_PARAM));
+            check('>');
+        } else {
+            string module = "";
+            // allow the unnamed module
+            if (isalpha(peek())) {
+                module = IDENTIFIER();
+                elements.push_back(SignElement(module, Sign::Kind::MODULE));
+                while (match(':')) {
+                    check(':');
+                    module = IDENTIFIER();
+                    elements.push_back(SignElement(module, Sign::Kind::MODULE));
+                }
+            } else {
+                elements.push_back(SignElement(module, Sign::Kind::MODULE));
             }
+            while (match('.')) elements.push_back(classOrMethodElement());
         }
-
-        if (match('.')) {
-            elements.push_back(methodElement());
-        }
-
         return elements;
     }
 
-    SignElement classElement() {
-        auto start = i;
+    SignElement classOrMethodElement() {
         auto name = IDENTIFIER();
         vector<string> list;
-        // Check type params
-        if (match('<')) {
-            list = idList();
-            check('>');
-        }
-        if (peek() == '(') {
-            // Restore and return
-            i = start - 1;
-            throw exceptions::SignatureError(text);
-        }
-        return {name, Sign::Kind::CLASS, list};
-    }
-
-    SignElement methodElement() {
-        auto name = IDENTIFIER();
-        vector<string> list;
-        vector<Sign> params;
+        vector<SignParam> params;
         // Check type params
         if (match('<')) {
             list = idList();
@@ -71,18 +51,83 @@ class SignParser {
         }
         // Check params
         if (match('(')) {
-            params.push_back(paramElement());
-            while (peek() == ',') {
-                advance();
-                params.push_back(paramElement());
-            }
+            params = paramsElement();
             check(')');
+            return {name, Sign::Kind::METHOD, list, params};
         }
+        return {name, Sign::Kind::CLASS, list};
+    }
+
+    vector<SignParam> paramsElement() {
+        vector<SignParam> params;
+        params.push_back(paramElement());
+        while (peek() == ',') {
+            advance();
+            params.push_back(paramElement());
+        }
+        params.shrink_to_fit();
+        return params;
+    }
+
+    SignElement classElement() {
+        auto name = IDENTIFIER();
+        vector<string> list;
+        // Check type params
+        if (match('<')) {
+            list = idList();
+            check('>');
+        }
+        return {name, Sign::Kind::CLASS, list};
+    }
+
+    SignElement methodElement() {
+        auto name = IDENTIFIER();
+        vector<string> list;
+        vector<SignParam> params;
+        // Check type params
+        if (match('<')) {
+            list = idList();
+            check('>');
+        }
+        // Check params
+        check('(');
+        params = paramsElement();
+        check(')');
         return {name, Sign::Kind::METHOD, list, params};
     }
 
-    Sign paramElement() {
-        return Sign(parse());
+    SignParam paramElement() {
+        vector<SignElement> elements;
+        if (match('<')) {
+            elements.push_back(SignElement(IDENTIFIER(), Sign::Kind::TYPE_PARAM));
+            check('>');
+            return SignParam(SignParam::Kind::TYPE_PARAM, Sign(elements));
+        } else {
+            string module = "";
+            // allow the unnamed module
+            if (isalpha(peek())) {
+                module = IDENTIFIER();
+                elements.push_back(SignElement(module, Sign::Kind::MODULE));
+                while (match(':')) {
+                    check(':');
+                    module = IDENTIFIER();
+                    elements.push_back(SignElement(module, Sign::Kind::MODULE));
+                }
+            } else {
+                elements.push_back(SignElement(module, Sign::Kind::MODULE));
+            }
+            do {
+                check('.');
+                elements.push_back(classElement());
+            } while (peek() == '.');
+            if (match('(')) {
+                vector<SignParam> params;
+                params = paramsElement();
+                check(')');
+                return SignParam(SignParam::Kind::CALLBACK, Sign(elements), params);
+            }
+            return SignParam(SignParam::Kind::CLASS, Sign(elements));
+        }
     }
 
     vector<string> idList() {
@@ -92,11 +137,12 @@ class SignParser {
             advance();
             list.push_back(IDENTIFIER());
         }
+        list.shrink_to_fit();
         return list;
     }
 
     char peek() {
-        if (i >= text.size()) throw exceptions::SignatureError(text);
+        if (i >= text.size()) throw errors::SignatureError(text);
         int j = i;
         for (; j < text.size() && isspace(text[j]); ++j)
             ;
@@ -104,15 +150,13 @@ class SignParser {
     }
 
     char advance() {
-        if (i >= text.size()) throw exceptions::SignatureError(text);
+        if (i >= text.size()) throw errors::SignatureError(text);
         while (isspace(text[i])) i++;
         return text[i++];
     }
 
     void check(char c) {
-        if (advance() != c) {
-            throw error(format("expected '%c' at col %d", c, i - 1));
-        }
+        if (advance() != c) { throw error(format("expected '%c' at col %d", c, i - 1)); }
     }
 
     bool match(char c) {
@@ -124,57 +168,40 @@ class SignParser {
     }
 
     string IDENTIFIER() {
+        static std::set<char> specialChars = {'$', '#', '!', '@', '%', '&', '_'};
         auto start = i;
-        if (!isalpha(advance())) {
+        if (isalpha(peek()) || specialChars.contains(peek())) {
+            advance();
+        } else {
             throw error(format("expected identifier at col %d", start));
         }
-        while (isalnum(peek())) advance();
-        if (start == i) {
-            throw error(format("expected identifier at col %d", start));
-        }
+        while (isalnum(peek()) || specialChars.contains(peek())) advance();
         return text.substr(start, i - start);
     }
 
-    exceptions::SignatureError error(string msg) {
-        return exceptions::SignatureError(text, msg);
-    }
+    errors::SignatureError error(string msg) { return errors::SignatureError(text, msg); }
 };
 
 Sign::Sign(string text) {
     SignParser parser{text};
     elements = parser.parse();
+    elements.shrink_to_fit();
 }
 
-Sign::Sign(vector<SignElement> elements)
-    : elements(elements) {
-}
+Sign::Sign(vector<SignElement> elements) : elements(elements) {}
 
-Sign::~Sign() {}
-
-static string join(const vector<string> list, string delimiter) {
-    string text = "";
-    for (int i = 0; i < list.size(); ++i) {
-        text += list[i];
-        if (i < list.size() - 1) text += delimiter;
+string SignParam::toString() const {
+    switch (kind) {
+        case Kind::CLASS:
+            return name.toString();
+        case Kind::TYPE_PARAM:
+            return name.toString();
+        case Kind::CALLBACK: {
+            vector<string> paramStrs;
+            for (auto param: params) { paramStrs.push_back(param.toString()); }
+            return name.toString() + join(paramStrs, ", ");
+        }
     }
-    return text;
-}
-
-template<typename T>
-static vector<T> slice(vector<T> list, int64 start, int64 end) {
-    if (start < 0) start += list.size();
-    if (end < 0) end += list.size();
-    if (start >= list.size() || end >= list.size()) throw std::runtime_error("slice(): index out of bounds");
-    if (start > end) {
-        int temp = start;
-        start = end;
-        end = temp;
-    }
-    vector<T> result = {};
-    for (int i = start; i < end; ++i) {
-        result.push_back(list[i]);
-    }
-    return result;
 }
 
 string SignElement::toString() const {
@@ -199,12 +226,15 @@ string SignElement::toString() const {
             if (!params.empty()) {
                 str.append("(");
                 vector<string> paramsStrs;
-                for (auto param: params) {
-                    paramsStrs.push_back(param.toString());
-                }
+                for (auto param: params) { paramsStrs.push_back(param.toString()); }
                 str.append(join(paramsStrs, ", "));
                 str.append(")");
             }
+            break;
+        case Sign::Kind::TYPE_PARAM:
+            str.append("<");
+            str.append(name);
+            str.append(">");
             break;
     }
     return str;
@@ -225,6 +255,8 @@ string Sign::toString() const {
                 case Sign::Kind::METHOD:
                     str.append(".");
                     break;
+                case Kind::TYPE_PARAM:
+                    break;
             }
         }
         str.append(element.toString());
@@ -232,13 +264,10 @@ string Sign::toString() const {
     return str;
 }
 
-Sign::Kind Sign::getKind() const {
-    return elements.back().getKind();
-}
+Sign::Kind Sign::getKind() const { return elements.back().getKind(); }
 
 Sign Sign::getParentModule() const {
-    if (getKind() == Kind::MODULE)
-        return slice(elements, 0, -1);
+    if (getKind() == Kind::MODULE) return Sign(slice(elements, 0, -1));
     int i = 0;
     for (auto element: elements) {
         if (element.getKind() != Kind::MODULE) break;
@@ -247,62 +276,55 @@ Sign Sign::getParentModule() const {
     return Sign(slice(elements, 0, i + 1));
 }
 
-
 Sign Sign::getParentClass() const {
     if (getKind() != Kind::MODULE) {
         int i = elements.size() - 2;
-        if (i < 0) {
-            return Sign("");
-        }
-        if (elements[i].getKind() == Kind::CLASS) {
-            return Sign(slice(elements, 0, i + 1));
-        }
+        if (i < 0) { return Sign::EMPTY; }
+        if (elements[i].getKind() == Kind::CLASS) { return Sign(slice(elements, 0, i + 1)); }
     }
-    return Sign("");
+    return Sign::EMPTY;
 }
 
-bool Sign::empty() const {
-    return getKind() == Kind::EMPTY;
+bool Sign::empty() const { return getKind() == Kind::EMPTY; }
+
+const vector<string> &Sign::getTypeParams() const { return elements.back().getTypeParams(); }
+
+const vector<SignParam> &Sign::getParams() const { return elements.back().getParams(); }
+
+string Sign::getName() const { return elements.back().toString(); }
+
+Sign Sign::operator|(const Sign &sign) const {
+    SignParser parser{toString() + sign.toString()};
+    return Sign(parser.parse());
 }
 
-bool Sign::appendModule(string name) {
-    if (elements.back().getKind() == Kind::MODULE) {
-        elements.push_back(SignElement{name, Kind::MODULE});
-        return true;
-    }
-    return false;
+Sign Sign::operator|(const string &str) const {
+    SignParser parser{toString() + str};
+    return Sign(parser.parse());
 }
 
-bool Sign::appendClass(string name, vector<string> typeParams) {
-    if (elements.back().getKind() != Kind::METHOD) {
-        elements.push_back(SignElement{name, Kind::CLASS, typeParams});
-        return true;
-    }
-    return false;
+Sign Sign::operator|(const SignElement &element) const {
+    auto newElements = elements;
+    newElements.push_back(element);
+    SignParser parser{Sign(newElements).toString()};
+    return Sign(parser.parse());
 }
 
-bool Sign::appendMethod(string name, vector<string> typeParams, vector<Sign> params) {
-    if (elements.back().getKind() != Kind::METHOD) {
-        elements.push_back(SignElement{name, Kind::METHOD, typeParams, params});
-        return true;
-    }
-    return false;
+Sign &Sign::operator|=(const Sign &sign) {
+    SignParser parser{toString() + sign.toString()};
+    elements = parser.parse();
+    return *this;
 }
 
-vector<string> Sign::getTypeParams() const {
-    auto last = elements.back();
-    if (last.getKind() != Kind::MODULE)
-        return last.getTypeParams();
-    return {};
+Sign &Sign::operator|=(const string &str) {
+    SignParser parser{toString() + str};
+    elements = parser.parse();
+    return *this;
 }
 
-vector<Sign> Sign::getParams() const {
-    auto last = elements.back();
-    if (last.getKind() == Kind::METHOD)
-        return last.getParams();
-    return {};
-}
-
-string Sign::getName() const {
-    return elements.back().toString();
+Sign &Sign::operator|=(const SignElement &element) {
+    elements.push_back(element);
+    SignParser parser{toString()};
+    elements = parser.parse();
+    return *this;
 }

@@ -5,9 +5,10 @@
 #include "../spimp/format.hpp"
 
 class SignElement;
+class SignParam;
 
 /// Represents a signature
-class Sign {
+class Sign final {
     friend class SignParser;
 
   public:
@@ -20,23 +21,29 @@ class Sign {
         /// Signature refers to a class
         CLASS,
         /// Signature refers to a method
-        METHOD
+        METHOD,
+        /// Signature refers to a type param
+        TYPE_PARAM
     };
 
   private:
     /// The signature elements
     vector<SignElement> elements;
 
-    Sign(vector<SignElement> elements);
-
   public:
     /**
      * Creates a signature object
-     * @param text The text of the signature
+     * @param text the text of the signature
      */
-    explicit Sign(string text);
+    Sign(string text);
 
-    ~Sign();
+    /**
+     * Creates a signature object
+     * @param elements the elements of the signature
+     */
+    explicit Sign(vector<SignElement> elements);
+
+    ~Sign() = default;
 
     const vector<SignElement> &getElements() const { return elements; }
 
@@ -60,12 +67,12 @@ class Sign {
     /**
      * @return the type params of the signature if exists, otherwise returns an empty array
      */
-    vector<string> getTypeParams() const;
+    const vector<string> &getTypeParams() const;
 
     /**
      * @return the params of the signature if exists, otherwise returns an empty array
      */
-    vector<Sign> getParams() const;
+    const vector<SignParam> &getParams() const;
 
     /**
      * @return the signature of the parent module
@@ -78,45 +85,96 @@ class Sign {
     Sign getParentClass() const;
 
     /**
-     * Appends a module name to this signature if possible
-     * @param name the name of the module
-     * @return true if it was added, false otherwise
+     * Appends a copy of this signature and another signature
+     * @param sign the other signature to be appended
+     * @return the appended signature
      */
-    bool appendModule(string name);
+    Sign operator|(const Sign &sign) const;
 
     /**
-     * Appends a module name to this signature if possible
-     * @param name the name of the class
-     * @param typeParams the type params of the class
-     * @return true if it was added, false otherwise
+     * Appends a copy of this signature and a string
+     * @param str the string to be appended
+     * @return the appended signature
      */
-    bool appendClass(string name, vector<string> typeParams = {});
+    Sign operator|(const string &str) const;
 
     /**
-     * Appends a module name to this signature if possible
-     * @param name the name of the class
-     * @param typeParams the type params of the class
-     * @param params the params of the class
-     * @return true if it was added, false otherwise
+     * Appends a copy of this signature and a SignElement
+     * @param element the element to be appended
+     * @return the appended signature
      */
-    bool appendMethod(string name, vector<string> typeParams = {}, vector<Sign> params = {});
+    Sign operator|(const SignElement &element) const;
+
+    /**
+     * Appends this signature with another signature
+     * @param sign the signature to be appended
+     * @return this signature after append
+     */
+    Sign &operator|=(const Sign &sign);
+
+    /**
+     * Appends this signature and a string
+     * @param str the string to be appended
+     * @return this signature after append
+     */
+    Sign &operator|=(const string &str);
+
+    /**
+     * Appends this signature and a SignElement
+     * @param element the element to be appended
+     * @return this signature after append
+     */
+    Sign &operator|=(const SignElement &element);
 
     /**
      * @return the string representation of the sign
      */
     string toString() const;
+
+    static const Sign EMPTY;
 };
 
-class SignElement {
+class SignParam final {
     friend class SignParser;
 
+  public:
+    enum class Kind {
+        /// Paramater refers to a class
+        CLASS,
+        /// Parameter refers to a type param
+        TYPE_PARAM,
+        /// Parameter refers to a callback
+        CALLBACK,
+    };
+
+  private:
+    Kind kind;
+    Sign name;
+    vector<SignParam> params;
+
+  public:
+    SignParam(Kind kind, const Sign &name, const vector<SignParam> &params = {}) : kind(kind), name(name), params(params) {}
+
+    Kind getKind() const { return kind; }
+
+    const Sign &getName() const { return name; }
+
+    const vector<SignParam> &getParams() const { return params; }
+
+    string toString() const;
+};
+
+class SignElement final {
+    friend class SignParser;
+
+  private:
     string name;
     Sign::Kind kind;
     vector<string> typeParams;
-    vector<Sign> params;
+    vector<SignParam> params;
 
   public:
-    SignElement(string name, Sign::Kind kind, vector<string> typeParams = {}, vector<Sign> params = {})
+    SignElement(string name, Sign::Kind kind, vector<string> typeParams = {}, vector<SignParam> params = {})
         : name(name), kind(kind), params(params), typeParams(typeParams) {}
 
     ~SignElement() = default;
@@ -125,7 +183,7 @@ class SignElement {
 
     Sign::Kind getKind() const { return kind; }
 
-    const vector<Sign> &getParams() const { return params; }
+    const vector<SignParam> &getParams() const { return params; }
 
     const vector<string> &getTypeParams() const { return typeParams; }
 

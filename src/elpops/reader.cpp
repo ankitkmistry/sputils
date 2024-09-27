@@ -2,7 +2,7 @@
 
 ElpReader::ElpReader(string path) : path(path) {
     file = fopen(path.c_str(), "rb");
-    if (file == null) throw exceptions::FileNotFoundError(path);
+    if (file == null) throw errors::FileNotFoundError(path);
 }
 
 void ElpReader::close() const {
