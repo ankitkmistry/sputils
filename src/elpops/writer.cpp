@@ -216,4 +216,3 @@ void ElpWriter::write(MetaInfo info) {
         write(meta.value);
     }
 }
-

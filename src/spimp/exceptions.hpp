@@ -4,40 +4,42 @@
 #include "common.hpp"
 #include "format.hpp"
 
-namespace exceptions {
+namespace exceptions
+{
     class CorruptFileError : public std::runtime_error {
-    private:
+      private:
         string path;
 
-    public:
+      public:
         explicit CorruptFileError(const string &path)
-                : std::runtime_error(format("'%s' is corrupted", path.c_str())), path(path) {}
+            : std::runtime_error(format("'%s' is corrupted", path.c_str())), path(path) {}
 
         string getPath() const { return path; }
     };
 
     class Unreachable : public std::runtime_error {
-    public:
+      public:
         explicit Unreachable() : std::runtime_error("unreachable code reached") {}
     };
 
     class FileNotFoundError : public std::runtime_error {
         string path;
-    public:
+
+      public:
         explicit FileNotFoundError(const string &path)
-                : std::runtime_error(format("file not found: '%s'", path.c_str())), path(path) {}
+            : std::runtime_error(format("file not found: '%s'", path.c_str())), path(path) {}
 
         const string &getPath() const { return path; }
     };
 
-class SignatureError : public std::runtime_error {
-    public:
+    class SignatureError : public std::runtime_error {
+      public:
         SignatureError(string sign, string msg)
-                : std::runtime_error(format("invalid signature: %s: '%s'", msg.c_str(), sign.c_str())) {}
+            : std::runtime_error(format("invalid signature: %s: '%s'", msg.c_str(), sign.c_str())) {}
 
         SignatureError(string sign)
-                : std::runtime_error(format("invalid signature: '%s'", sign.c_str())) {}
+            : std::runtime_error(format("invalid signature: '%s'", sign.c_str())) {}
     };
-}
+}    // namespace exceptions
 
-#endif //ELPOPS_EXCEPTIONS_HPP
+#endif    // ELPOPS_EXCEPTIONS_HPP

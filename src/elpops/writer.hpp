@@ -4,7 +4,7 @@
 #include "reader.hpp"
 
 class ElpWriter {
-private:
+  private:
     string path;
     FILE *file;
 
@@ -56,8 +56,8 @@ private:
     void write(TypeParamInfo info);
 
     void write(MetaInfo info);
-public:
 
+  public:
     explicit ElpWriter(const string &filename);
 
     /**
@@ -79,4 +79,4 @@ public:
 };
 
 
-#endif //VELOCITY_WRITER_HPP
+#endif    // VELOCITY_WRITER_HPP

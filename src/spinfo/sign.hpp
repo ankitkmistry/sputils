@@ -10,7 +10,7 @@ class SignElement;
 class Sign {
     friend class SignParser;
 
-public:
+  public:
     /// Describes the kind of the signature
     enum class Kind {
         /// Signature is empty
@@ -22,14 +22,14 @@ public:
         /// Signature refers to a method
         METHOD
     };
-private:
+
+  private:
     /// The signature elements
     vector<SignElement> elements;
 
     Sign(vector<SignElement> elements);
 
-public:
-
+  public:
     /**
      * Creates a signature object
      * @param text The text of the signature
@@ -115,9 +115,9 @@ class SignElement {
     vector<string> typeParams;
     vector<Sign> params;
 
-public:
+  public:
     SignElement(string name, Sign::Kind kind, vector<string> typeParams = {}, vector<Sign> params = {})
-            : name(name), kind(kind), params(params), typeParams(typeParams) {}
+        : name(name), kind(kind), params(params), typeParams(typeParams) {}
 
     ~SignElement() = default;
 

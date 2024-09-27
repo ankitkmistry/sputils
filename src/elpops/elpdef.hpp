@@ -73,7 +73,6 @@ struct CpInfo {
     bool operator==(const CpInfo &rhs) const;
 
     bool operator!=(const CpInfo &rhs) const;
-
 };
 
 struct MetaInfo {

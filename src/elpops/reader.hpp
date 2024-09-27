@@ -1,11 +1,11 @@
 #ifndef SOURCE_LOADER_PARSER_HPP_
 #define SOURCE_LOADER_PARSER_HPP_
 
-#include "elpdef.hpp"
 #include "../spimp/exceptions.hpp"
+#include "elpdef.hpp"
 
 class ElpReader {
-private:
+  private:
     uint32 index = 0;
     FILE *file;
     string path;
@@ -65,11 +65,11 @@ private:
         return a << 32 | b;
     }
 
-    [[noreturn]]void corruptFileError() {
+    [[noreturn]] void corruptFileError() {
         throw exceptions::CorruptFileError(path);
     }
 
-public:
+  public:
     explicit ElpReader(string path);
 
     /**

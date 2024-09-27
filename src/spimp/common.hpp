@@ -4,10 +4,10 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
-#include <string>
-#include <vector>
 #include <map>
 #include <stdexcept>
+#include <string>
+#include <vector>
 
 #define null (nullptr)
 
@@ -24,4 +24,4 @@ using int16 = std::int16_t;
 using int32 = std::int32_t;
 using int64 = std::int64_t;
 
-#endif //ELPOPS_COMMON_HPP
+#endif    // ELPOPS_COMMON_HPP

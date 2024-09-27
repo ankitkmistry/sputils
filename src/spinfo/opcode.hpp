@@ -244,6 +244,20 @@ enum class Opcode {
     /// is not null
     NISNULL,
 
+    // cast opcodes
+    /// integer to float
+    I2F,
+    /// float to integer
+    F2I,
+    /// integere to boolean
+    I2B,
+    /// boolean to integer
+    B2I,
+    /// object to boolean (truth value of the object)
+    O2B,
+    /// object to string (vm specific string representation)
+    O2S,
+
     // thread safety
     /// enter monitor
     ENTERMONITOR,
@@ -277,7 +291,7 @@ enum class Opcode {
  * Contains debug info for all opcodes
  */
 class OpcodeInfo {
-public:
+  public:
     /**
      * @param opcode
      * @return string representation of the opcode
@@ -303,6 +317,4 @@ public:
     static Opcode fromString(string str);
 };
 
-#endif //VELOCITY_OPCODE_HPP
-
-#pragma clang diagnostic pop
+#endif    // VELOCITY_OPCODE_HPP

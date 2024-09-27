@@ -1,9 +1,9 @@
 #include "elpdef.hpp"
-#include "../spimp/utils.hpp"
 #include "../spimp/exceptions.hpp"
+#include "../spimp/utils.hpp"
 
 bool CpInfo::operator==(const CpInfo &rhs) const {
-    if (tag != rhs.tag)return false;
+    if (tag != rhs.tag) return false;
     switch (tag) {
         case 0x03:
             return _char == rhs._char;
@@ -25,15 +25,15 @@ bool CpInfo::operator!=(const CpInfo &rhs) const {
 }
 
 CpInfo CpInfo::fromChar(uint32 c) {
-    return CpInfo{.tag=0x03, ._char=c};
+    return CpInfo{.tag = 0x03, ._char = c};
 }
 
 CpInfo CpInfo::fromInt(int64 i) {
-    return CpInfo{.tag=0x04, ._int=signedToUnsigned(i)};
+    return CpInfo{.tag = 0x04, ._int = signedToUnsigned(i)};
 }
 
 CpInfo CpInfo::fromFloat(double d) {
-    return CpInfo{.tag=0x05, ._float=doubleToRaw(d)};
+    return CpInfo{.tag = 0x05, ._float = doubleToRaw(d)};
 }
 
 CpInfo CpInfo::fromString(string s) {
@@ -43,7 +43,7 @@ CpInfo CpInfo::fromString(string s) {
     for (int i = 0; i < str.len; ++i) {
         str.bytes[i] = s[i];
     }
-    return CpInfo{.tag=0x06, ._string=str};
+    return CpInfo{.tag = 0x06, ._string = str};
 }
 
 CpInfo CpInfo::fromArray(std::vector<CpInfo> v) {
@@ -53,7 +53,7 @@ CpInfo CpInfo::fromArray(std::vector<CpInfo> v) {
     for (int i = 0; i < arr.len; ++i) {
         arr.items = &v[i];
     }
-    return CpInfo{.tag=0x07, ._array=arr};
+    return CpInfo{.tag = 0x07, ._array = arr};
 }
 
 bool __UTF8::operator==(const __UTF8 &rhs) const {
@@ -66,9 +66,9 @@ bool __UTF8::operator!=(const __UTF8 &rhs) const {
 }
 
 bool __Container::operator==(const __Container &rhs) const {
-    if (len != rhs.len)return false;
+    if (len != rhs.len) return false;
     for (int i = 0; i < len; ++i)
-        if (items[i] != rhs.items[i])return false;
+        if (items[i] != rhs.items[i]) return false;
     return true;
 }
 

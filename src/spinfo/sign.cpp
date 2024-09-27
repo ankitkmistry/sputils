@@ -4,12 +4,15 @@
 class SignParser {
     const string text;
     int32 i = 0;
-public:
+
+  public:
     explicit SignParser(string text) : text(text + "\033") {}
 
     vector<SignElement> parse() {
         if (text.empty()) {
-            return {SignElement{"", Sign::Kind::EMPTY}};
+            return {
+                    SignElement{"", Sign::Kind::EMPTY}
+            };
         }
         vector<SignElement> elements;
         string module = "";
@@ -93,15 +96,16 @@ public:
     }
 
     char peek() {
-        if (i >= text.size())throw exceptions::SignatureError(text);
+        if (i >= text.size()) throw exceptions::SignatureError(text);
         int j = i;
-        for (; j < text.size() && isspace(text[j]); ++j);
+        for (; j < text.size() && isspace(text[j]); ++j)
+            ;
         return text[j];
     }
 
     char advance() {
-        if (i >= text.size())throw exceptions::SignatureError(text);
-        while (isspace(text[i]))i++;
+        if (i >= text.size()) throw exceptions::SignatureError(text);
+        while (isspace(text[i])) i++;
         return text[i++];
     }
 
@@ -124,7 +128,7 @@ public:
         if (!isalpha(advance())) {
             throw error(format("expected identifier at col %d", start));
         }
-        while (isalnum(peek()))advance();
+        while (isalnum(peek())) advance();
         if (start == i) {
             throw error(format("expected identifier at col %d", start));
         }
@@ -142,7 +146,7 @@ Sign::Sign(string text) {
 }
 
 Sign::Sign(vector<SignElement> elements)
-        : elements(elements) {
+    : elements(elements) {
 }
 
 Sign::~Sign() {}
@@ -158,9 +162,9 @@ static string join(const vector<string> list, string delimiter) {
 
 template<typename T>
 static vector<T> slice(vector<T> list, int64 start, int64 end) {
-    if (start < 0)start += list.size();
-    if (end < 0)end += list.size();
-    if (start >= list.size() || end >= list.size())throw std::runtime_error("slice(): index out of bounds");
+    if (start < 0) start += list.size();
+    if (end < 0) end += list.size();
+    if (start >= list.size() || end >= list.size()) throw std::runtime_error("slice(): index out of bounds");
     if (start > end) {
         int temp = start;
         start = end;
@@ -237,7 +241,7 @@ Sign Sign::getParentModule() const {
         return slice(elements, 0, -1);
     int i = 0;
     for (auto element: elements) {
-        if (element.getKind() != Kind::MODULE)break;
+        if (element.getKind() != Kind::MODULE) break;
         i++;
     }
     return Sign(slice(elements, 0, i + 1));
